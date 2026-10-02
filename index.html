@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포톤 고 — 우리 팀 부지판</title>
+<style>
+:root{
+  --indigo:#241E4E; --indigo-d:#17123A; --indigo-mid:#342A6B;
+  --gold:#F2A93B; --teal:#17A398; --fail:#C0392B;
+  --card:#F4F1FA; --line:#E3E0EF; --ink:#1A1A2E; --muted:#6B7280;
+  --mountain:#2ECC71; --desert:#F2C94C; --sea:#3498DB; --city:#B0B7C3;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,"Segoe UI","Malgun Gothic",Roboto,sans-serif;background:#FAFAFC;color:var(--ink);}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px;}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;}
+.teamNameBox{flex:1;min-width:160px;}
+.teamNameBox input{
+  font-family:Georgia,serif;font-size:22px;font-weight:700;color:#241E4E;
+  border:none;border-bottom:2px solid var(--line);background:transparent;
+  padding:4px 2px;width:100%;
+}
+.teamNameBox input:focus{outline:none;border-color:var(--teal);}
+.coinBadge{
+  background:var(--indigo);color:var(--gold);font-weight:700;font-size:18px;
+  border-radius:20px;padding:9px 20px;white-space:nowrap;
+}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;}
+.panel-title{font-size:13px;font-weight:700;color:#8C87B0;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+
+.hexboard{position:relative;margin:0 auto;}
+.hex{
+  position:absolute;clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:11px;color:#1A1A2E;font-weight:700;cursor:default;transition:transform .1s;
+}
+.hex.empty.buyable{cursor:pointer;}
+.hex.empty.buyable:hover{transform:scale(1.07);}
+.hex .rlabel{font-size:9px;opacity:.7;font-weight:600;}
+.hex .panelname{font-size:11px;}
+.hex .panelw{font-size:9px;opacity:.85;}
+.legend{display:flex;gap:14px;justify-content:center;margin-top:10px;flex-wrap:wrap;font-size:11.5px;color:#8C87B0;}
+.legend span{display:inline-flex;align-items:center;gap:5px;}
+.legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+.shop{display:flex;gap:10px;flex-wrap:wrap;}
+.shop-item{
+  flex:1;min-width:110px;border:2px solid var(--line);border-radius:10px;
+  padding:12px 10px;text-align:center;cursor:pointer;background:#fff;
+}
+.shop-item:hover{border-color:#C9C4D6;}
+.shop-item.selected{border-color:var(--indigo);background:var(--card);}
+.shop-item.disabled{opacity:.4;cursor:not-allowed;}
+.shop-item .mname{font-weight:700;font-size:14px;color:#241E4E;}
+.shop-item .mcost{font-size:13px;color:var(--gold);font-weight:700;margin-top:4px;}
+.shop-item.free .mcost{color:var(--teal);}
+.shop-item .mw{font-size:11.5px;color:#8C87B0;margin-top:2px;}
+.buyhint{font-size:12.5px;color:#8C87B0;margin-top:10px;text-align:center;}
+.installNote{
+  background:#EAFBF7;border-left:3px solid var(--teal);border-radius:6px;
+  padding:10px 12px;font-size:12.5px;color:#0B5A50;line-height:1.5;margin-bottom:12px;
+}
+
+.prodNote{font-size:12.5px;color:#8C87B0;margin-bottom:12px;line-height:1.5;}
+.prodGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.prodField label{display:block;font-size:12.5px;color:#8C87B0;margin-bottom:5px;font-weight:700;}
+.prodField input{
+  width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;
+  font-size:16px;text-align:center;font-family:inherit;
+}
+.prodTotal{
+  background:var(--card);border-radius:10px;padding:12px 14px;text-align:center;
+  font-size:15px;color:#241E4E;
+}
+.prodTotal b{font-family:Georgia,serif;font-size:20px;color:var(--indigo);}
+.prodClearBtn{
+  width:100%;background:#fff;border:1px solid var(--line);color:#8C87B0;
+  border-radius:8px;padding:9px;font-size:12.5px;cursor:pointer;margin-top:8px;
+}
+.prodClearBtn:hover{background:var(--card);}
+
+.coinManage{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.coinManage input{
+  width:90px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;
+  font-size:15px;text-align:center;font-family:inherit;
+}
+.coinManage button{
+  background:var(--teal);color:#fff;border:none;border-radius:8px;
+  padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;
+}
+.coinManage button.minus{background:var(--fail);}
+.coinManage button:hover{filter:brightness(1.1);}
+.coinNote{font-size:12px;color:#8C87B0;margin-top:8px;line-height:1.5;}
+
+.resetBtn{
+  width:100%;background:#fff;border:1.5px solid var(--fail);color:var(--fail);
+  border-radius:10px;padding:11px;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:6px;
+}
+.resetBtn:hover{background:var(--fail);color:#fff;}
+
+/* 최종 점수 계산 */
+.scoreNote{
+  background:#FDF2E9;border-left:3px solid var(--gold);border-radius:6px;
+  padding:10px 12px;font-size:12px;color:#7D5A00;line-height:1.5;margin-bottom:14px;
+}
+.scoreTable{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:14px;}
+.scoreTable th{background:var(--card);color:#8C87B0;padding:8px 6px;font-size:11.5px;text-align:center;}
+.scoreTable td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;}
+.scoreTable select{
+  width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 4px;
+  font-size:12.5px;font-family:inherit;background:#fff;
+}
+.scoreTable .bonusCell{font-weight:700;color:var(--gold);}
+.scoreSummary{background:var(--card);border-radius:10px;padding:14px 16px;}
+.scoreRow{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;color:#241E4E;}
+.scoreTotal{
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--line);margin-top:8px;padding-top:10px;
+  font-size:15px;font-weight:700;color:#241E4E;
+}
+.scoreTotal b{font-family:Georgia,serif;font-size:24px;color:var(--indigo);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="teamNameBox">
+      <input type="text" id="teamName" value="우리 팀" maxlength="16">
+    </div>
+    <div class="coinBadge"><span id="coinDisplay">10</span> 💰</div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-title">우리 팀 부지판</div>
+    <div class="hexboard" id="hexboard"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:#2ECC71"></span>산</span>
+      <span><span class="dot" style="background:#F2C94C"></span>사막</span>
+      <span><span class="dot" style="background:#3498DB"></span>바다</span>
+      <span><span class="dot" style="background:#B0B7C3"></span>도시</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title" id="installTitle">패널 구입</div>
+    <div id="installArea"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">이번 라운드 발전량 입력</div>
+    <div class="prodNote">딜러 화면에 공개된 광자 에너지와 우리 팀 패널의 일함수(eV)를 직접 비교해서, 각 지역에서 발전에 성공한 패널 개수를 세어 입력하세요.</div>
+    <div class="prodGrid">
+      <div class="prodField"><label>⛰️ 산 생산량</label><input type="number" min="0" id="prod-mountain" oninput="updateProdTotal()"></div>
+      <div class="prodField"><label>🌊 바다 생산량</label><input type="number" min="0" id="prod-sea" oninput="updateProdTotal()"></div>
+      <div class="prodField"><label>🏙️ 도시 생산량</label><input type="number" min="0" id="prod-city" oninput="updateProdTotal()"></div>
+      <div class="prodField"><label>🏜️ 사막 생산량</label><input type="number" min="0" id="prod-desert" oninput="updateProdTotal()"></div>
+    </div>
+    <div class="prodTotal">이번 라운드 총 생산량: <b id="prodTotalVal">0</b>개</div>
+    <button class="prodClearBtn" onclick="clearProd()">다음 라운드를 위해 입력값 지우기</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">코인 관리</div>
+    <div class="coinManage">
+      <input type="number" id="coinInput" placeholder="코인 수" min="0">
+      <button onclick="addCoins()">추가</button>
+      <button class="minus" onclick="subCoins()">차감</button>
+    </div>
+    <div class="coinNote">전기 판매 수익은 전체 팀 생산량에 따라 단가가 달라지므로, 딜러(선생님)가 안내해주는 코인을 여기에 직접 더해주세요.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">🏆 최종 점수 계산</div>
+    <div class="scoreNote">게임이 끝나면 여기서 최종 점수를 계산해보세요. 자원왕 보너스는 다른 팀과 비교한 순위가 필요해서, 선생님이 반 전체 순위를 불러주면 아래에서 직접 골라주세요.</div>
+    <table class="scoreTable">
+      <thead><tr><th>금속</th><th>보유 개수</th><th>순위</th><th>보너스</th></tr></thead>
+      <tbody id="scoreBody"></tbody>
+    </table>
+    <div class="scoreSummary" id="scoreSummary"></div>
+  </div>
+
+  <button class="resetBtn" onclick="resetTeam()">🔄 처음부터 다시 시작 (코인·부지판 초기화)</button>
+</div>
+
+<script>
+const METALS = [
+  {key:'cs',name:'세슘',symbol:'Cs',w:2.0,cost:6,c1:'#E74C3C',c2:'#C0392B'},
+  {key:'ba',name:'바륨',symbol:'Ba',w:2.5,cost:5,c1:'#2E86C1',c2:'#1B4F72'},
+  {key:'ca',name:'칼슘',symbol:'Ca',w:3.0,cost:4,c1:'#9B59B6',c2:'#5B2C6F'},
+  {key:'ag',name:'은',symbol:'Ag',w:4.0,cost:3,c1:'#AEB6BF',c2:'#707B7C'},
+];
+const REGIONS = [
+  {key:'mountain',name:'산',icon:'⛰️',color:'#2ECC71'},
+  {key:'sea',name:'바다',icon:'🌊',color:'#3498DB'},
+  {key:'city',name:'도시',icon:'🏙️',color:'#B0B7C3'},
+  {key:'desert',name:'사막',icon:'🏜️',color:'#F2C94C'},
+];
+const HEX_POSITIONS = [
+  {col:0,row:0,region:'mountain'},{col:0,row:1,region:'sea'},{col:0,row:2,region:'sea'},
+  {col:1,row:0,region:'mountain'},{col:1,row:1,region:'mountain'},{col:1,row:2,region:'city'},{col:1,row:3,region:'sea'},
+  {col:2,row:0,region:'mountain'},{col:2,row:1,region:'city'},{col:2,row:2,region:'city'},{col:2,row:3,region:'sea'},{col:2,row:4,region:'sea'},
+  {col:3,row:0,region:'mountain'},{col:3,row:1,region:'desert'},{col:3,row:2,region:'city'},{col:3,row:3,region:'desert'},
+  {col:4,row:0,region:'desert'},{col:4,row:1,region:'desert'},{col:4,row:2,region:'desert'},
+];
+const COL_HEIGHTS = [3,4,5,4,3];
+const HEX_W = 66, HEX_H = 58;
+const COL_SPACING = HEX_W * 0.75;
+const ROW_SPACING = HEX_H;
+const MAX_COL_H = Math.max(...COL_HEIGHTS);
+const STARTING_PANELS = ['cs','ba','ca','ag','ag'];
+const RESOURCE_BONUS = {ag:[8,4,2], ca:[4,2,1], ba:[2,1], cs:[]};
+
+const STORAGE_KEY = 'photongo_team_state_v2';
+
+function hexPixelPos(col, row){
+  const n = COL_HEIGHTS[col];
+  const x = col * COL_SPACING;
+  const centerOffset = (MAX_COL_H-1)/2 * ROW_SPACING;
+  const y = centerOffset + (row - (n-1)/2) * ROW_SPACING;
+  return {x,y};
+}
+
+function makeEmptyBoard(){
+  return HEX_POSITIONS.map(h=>({region:h.region, panel:null}));
+}
+
+function freshState(name){
+  return {
+    teamName: name || '우리 팀',
+    coins: 10,
+    board: makeEmptyBoard(),
+    startingQueue: [...STARTING_PANELS], // 아직 무료로 설치하지 않은 기본 패널
+    selectedMetal: null,
+    selectedFromQueue: false,
+  };
+}
+
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.board && parsed.board.length===19 && Array.isArray(parsed.startingQueue)) return parsed;
+    }
+  }catch(e){}
+  return freshState();
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function renderAll(){
+  document.getElementById('teamName').value = state.teamName;
+  document.getElementById('coinDisplay').textContent = state.coins;
+  renderBoard();
+  renderInstallArea();
+  renderScoreTable();
+}
+
+function renderBoard(){
+  const boardW = 5 * COL_SPACING + (HEX_W - COL_SPACING);
+  const boardH = MAX_COL_H * ROW_SPACING + 4;
+  const box = document.getElementById('hexboard');
+  box.style.width = boardW+'px';
+  box.style.height = boardH+'px';
+  let html = '';
+  HEX_POSITIONS.forEach((hp,i)=>{
+    const slot = state.board[i];
+    const region = REGIONS.find(r=>r.key===slot.region);
+    const bg = slot.panel
+      ? `linear-gradient(135deg, ${METALS.find(m=>m.key===slot.panel).c1}, ${METALS.find(m=>m.key===slot.panel).c2})`
+      : region.color;
+    const {x,y} = hexPixelPos(hp.col, hp.row);
+    const isBuyable = !slot.panel && state.selectedMetal;
+    html += `<div class="hex ${!slot.panel?'empty':''} ${isBuyable?'buyable':''}" style="background:${bg};left:${x}px;top:${y}px;width:${HEX_W}px;height:${HEX_H}px;" data-slot="${i}">
+      ${slot.panel ? `<div class="panelname">${METALS.find(m=>m.key===slot.panel).name}</div><div class="panelw">${METALS.find(m=>m.key===slot.panel).w}eV</div>` : `<div class="rlabel">${region.name}</div>`}
+    </div>`;
+  });
+  box.innerHTML = html;
+  if(state.selectedMetal){
+    box.querySelectorAll('.hex.buyable').forEach(hx=>{
+      hx.addEventListener('click', ()=>{
+        const idx = parseInt(hx.getAttribute('data-slot'));
+        if(state.selectedFromQueue){
+          placeFromQueue(idx);
+        } else {
+          buyAndPlace(idx);
+        }
+      });
+    });
+  }
+}
+
+function groupQueue(){
+  return METALS.map(m=>({
+    metal: m,
+    count: state.startingQueue.filter(k=>k===m.key).length,
+  })).filter(g=>g.count>0);
+}
+
+function renderInstallArea(){
+  const titleEl = document.getElementById('installTitle');
+  const box = document.getElementById('installArea');
+
+  if(state.startingQueue.length > 0){
+    titleEl.textContent = `기본 패널 설치 (남은 패널 ${state.startingQueue.length}개)`;
+    const groups = groupQueue();
+    box.innerHTML = `
+      <div class="installNote">게임 시작 전, 무료로 받은 기본 패널 5개(세슘1·바륨1·칼슘1·은2)를 원하는 위치에 직접 배치하세요. 금속을 고른 뒤 위 부지판의 빈 칸을 누르면 설치됩니다.</div>
+      <div class="shop">
+        ${groups.map(g=>{
+          const selected = state.selectedFromQueue && state.selectedMetal===g.metal.key;
+          return `<div class="shop-item free ${selected?'selected':''}" data-metal="${g.metal.key}">
+            <div class="mname">${g.metal.name}(${g.metal.symbol})</div>
+            <div class="mcost">무료 ×${g.count}</div>
+            <div class="mw">${g.metal.w.toFixed(1)}eV 이상</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="buyhint">금속을 선택한 뒤, 위 부지판의 빈 칸을 눌러 설치하세요.</div>
+    `;
+    box.querySelectorAll('.shop-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const key = el.getAttribute('data-metal');
+        if(state.selectedFromQueue && state.selectedMetal===key){
+          state.selectedMetal = null; state.selectedFromQueue = false;
+        } else {
+          state.selectedMetal = key; state.selectedFromQueue = true;
+        }
+        saveState();
+        renderInstallArea();
+        renderBoard();
+      });
+    });
+  } else {
+    titleEl.textContent = '패널 구입';
+    box.innerHTML = `
+      <div class="shop" id="shop"></div>
+      <div class="buyhint">금속을 선택한 뒤, 위 부지판의 빈 칸을 눌러 설치하세요.</div>
+    `;
+    const shop = document.getElementById('shop');
+    shop.innerHTML = METALS.map(m=>{
+      const disabled = state.coins < m.cost;
+      const selected = !state.selectedFromQueue && state.selectedMetal===m.key;
+      return `<div class="shop-item ${disabled?'disabled':''} ${selected?'selected':''}" data-metal="${m.key}">
+        <div class="mname">${m.name}(${m.symbol})</div>
+        <div class="mcost">${m.cost}코인</div>
+        <div class="mw">${m.w.toFixed(1)}eV 이상</div>
+      </div>`;
+    }).join('');
+    shop.querySelectorAll('.shop-item:not(.disabled)').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const key = el.getAttribute('data-metal');
+        if(!state.selectedFromQueue && state.selectedMetal===key){
+          state.selectedMetal = null;
+        } else {
+          state.selectedMetal = key; state.selectedFromQueue = false;
+        }
+        saveState();
+        renderInstallArea();
+        renderBoard();
+      });
+    });
+  }
+}
+
+function placeFromQueue(slotIdx){
+  const key = state.selectedMetal;
+  const qIdx = state.startingQueue.indexOf(key);
+  if(qIdx===-1) return;
+  if(state.board[slotIdx].panel) return;
+  state.startingQueue.splice(qIdx,1);
+  state.board[slotIdx].panel = key;
+  state.selectedMetal = null;
+  state.selectedFromQueue = false;
+  saveState();
+  renderAll();
+}
+
+function buyAndPlace(slotIdx){
+  const metal = METALS.find(m=>m.key===state.selectedMetal);
+  if(!metal) return;
+  if(state.coins < metal.cost) return;
+  if(state.board[slotIdx].panel) return;
+  state.coins -= metal.cost;
+  state.board[slotIdx].panel = metal.key;
+  state.selectedMetal = null;
+  saveState();
+  renderAll();
+}
+
+document.getElementById('teamName').addEventListener('input', (e)=>{
+  state.teamName = e.target.value;
+  saveState();
+});
+
+function addCoins(){
+  const v = parseInt(document.getElementById('coinInput').value);
+  if(isNaN(v) || v<=0) return;
+  state.coins += v;
+  document.getElementById('coinInput').value = '';
+  saveState();
+  renderAll();
+}
+function subCoins(){
+  const v = parseInt(document.getElementById('coinInput').value);
+  if(isNaN(v) || v<=0) return;
+  state.coins = Math.max(0, state.coins - v);
+  document.getElementById('coinInput').value = '';
+  saveState();
+  renderAll();
+}
+
+function resetTeam(){
+  if(!confirm('정말로 초기화할까요? 코인과 부지판이 처음 상태로 되돌아갑니다.')) return;
+  state = freshState(state.teamName);
+  saveState();
+  renderAll();
+  clearProd();
+}
+
+function updateProdTotal(){
+  const total = REGIONS.reduce((s,r)=>{
+    const v = parseInt(document.getElementById('prod-'+r.key).value);
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+  document.getElementById('prodTotalVal').textContent = total;
+}
+function clearProd(){
+  REGIONS.forEach(r=>{ document.getElementById('prod-'+r.key).value = ''; });
+  document.getElementById('prodTotalVal').textContent = '0';
+}
+
+function countMetal(key){
+  return state.board.filter(s=>s.panel===key).length;
+}
+
+function renderScoreTable(){
+  const body = document.getElementById('scoreBody');
+  body.innerHTML = METALS.map(m=>{
+    const count = countMetal(m.key);
+    const bonusArr = RESOURCE_BONUS[m.key];
+    if(bonusArr.length===0){
+      return `<tr><td>${m.name}</td><td>${count}개</td><td colspan="2" style="color:#8C87B0;">보너스 없음</td></tr>`;
+    }
+    const options = ['<option value="-1">해당없음</option>']
+      .concat(bonusArr.map((b,i)=>`<option value="${i}">${i+1}등 (+${b})</option>`));
+    return `<tr>
+      <td>${m.name}</td><td>${count}개</td>
+      <td><select id="rank-${m.key}" onchange="updateScoreSummary()">${options.join('')}</select></td>
+      <td class="bonusCell" id="bonus-${m.key}">0</td>
+    </tr>`;
+  }).join('');
+  updateScoreSummary();
+}
+
+function updateScoreSummary(){
+  let bonusTotal = 0;
+  METALS.forEach(m=>{
+    const bonusArr = RESOURCE_BONUS[m.key];
+    if(bonusArr.length===0) return;
+    const sel = document.getElementById('rank-'+m.key);
+    if(!sel) return;
+    const rankIdx = parseInt(sel.value);
+    const bonus = rankIdx>=0 ? bonusArr[rankIdx] : 0;
+    const cell = document.getElementById('bonus-'+m.key);
+    if(cell) cell.textContent = `+${bonus}`;
+    bonusTotal += bonus;
+  });
+  const installPts = state.board.filter(s=>s.panel).length;
+  const moneyPts = Math.floor(state.coins/4);
+  const total = installPts + bonusTotal + moneyPts;
+  const box = document.getElementById('scoreSummary');
+  if(box){
+    box.innerHTML = `
+      <div class="scoreRow"><span>① 패널 설치 점수</span><span>${installPts}</span></div>
+      <div class="scoreRow"><span>② 자원왕 보너스</span><span>${bonusTotal}</span></div>
+      <div class="scoreRow"><span>③ 자금 점수 (코인 ${state.coins}개 ÷ 4)</span><span>${moneyPts}</span></div>
+      <div class="scoreTotal"><span>총점</span><b>${total}</b></div>
+    `;
+  }
+}
+
+renderAll();
+</script>
+</body>
+</html>
